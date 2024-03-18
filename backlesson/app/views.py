@@ -1,74 +1,82 @@
 from django.shortcuts import render
-from datetime import date
-from django.http import HttpResponse
+from datetime import datetime
+from django.http import JsonResponse, HttpResponse
 import json
 from backlesson.settings import *
+from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
 
 def gettime(request):
     jsons = json.loads(request.body)
     action = jsons['action']
-    today = date.today()
-    data = [{"curtime" : today}]
-    resp = sendResponse(request, 200, data,  action)
+
+    today = datetime.now()
+    data = [{'datetime':today}]
+    resp = sendResponse(request, 200, data, action)
     return resp
 # gettime
 
-def userregister(request):
+def dt_register(request):
     jsons = json.loads(request.body)
     action = jsons['action']
-    email = str(jsons['email']).lower()
-    firstname = str(jsons['firstname']).capitalize()
-    lastname = str(jsons['lastname']).capitalize()
+    firstname = jsons['firstname']
+    lastname = jsons['lastname']
+    email = jsons['email']
     passw = jsons['passw']
-    
+
     myCon = connectDB()
     cursor = myCon.cursor()
     
-    query = F"SELECT COUNT(*) as usercount FROM t_user WHERE email = '{email}' AND enabled = 1"
-
+    query = F"""SELECT COUNT(*) AS usercount FROM t_user 
+            WHERE email = '{email}' AND enabled = 1"""
+    
     cursor.execute(query)
     columns = cursor.description
-    respRow = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
-
-    for row in respRow: 
-        if row["usercount"] == 1: # burtgeh bolomjgui
-            data = [{'email':email }]
-            resp = sendResponse(request, 1000, data, action  )
-        else: # burtgeh bolomjtoi
-            cursor1 = myCon.cursor()
-            query = F"""INSERT INTO t_user(
-                        email, lastname, firstname, passw, regdate, enabled, token, tokendate)
-                        VALUES ('{email}', '{lastname}', '{firstname}', '{passw}'
-                                , NOW(), 0, 'aisfhbaiwehbfuyebr2346728', NOW() + interval '24 hour');"""
-
-            cursor1.execute(query)
-            myCon.commit()
-            cursor1.close()
-            data = [{'email':email, 'lastname': lastname, 'firstname': firstname }]
-            resp = sendResponse(request, 1001, respRow, action  )
-            
+    respRow = [{columns[index][0]:column for index, 
+        column in enumerate(value)} for value in cursor.fetchall()]
     cursor.close()
 
+    if respRow[0]['usercount'] == 1:
+        data = [{'email':email}]
+        resp = sendResponse(request, 1000, data, action)
+    else:
+        token = generateStr(12)
+        query = F"""INSERT INTO public.t_user(
+	email, lastname, firstname, passw, regdate, enabled, token, tokendate)
+	VALUES ('{email}', '{lastname}', '{firstname}', '{passw}'
+    , NOW(), 0, '{token}', NOW() + interval \'1 day\');"""
+        cursor1 = myCon.cursor()
+        cursor1.execute(query)
+        myCon.commit()
+        cursor1.close()
+        data = [{'email':email, 'firstname':firstname, 'lastname': lastname}]
+        resp = sendResponse(request, 1001, data, action)
 
     return resp
-# userrequest
+# dt_register
 
-
+@csrf_exempt
 def checkService(request):
-    jsons = json.loads(request.body)
-    if jsons['action'] == 'gettime':
-        result = gettime(request)
-    elif jsons['action'] == 'register':
-        result = userregister(request)
+    if request.method == "POST":
+        try :
+            jsons = json.loads(request.body)
+        except json.JSONDecodeError:
+            result = sendResponse(request, 3003, [], "no action")
+            return JsonResponse(json.loads(result))
+        action = jsons['action']
+
+        if action == 'gettime':
+            result = gettime(request)
+            return JsonResponse(json.loads(result))
+        elif action == 'register':
+            result = dt_register(request)
+            return JsonResponse(json.loads(result))
+        else:
+            result = sendResponse(request, 3001, [], action)
+            return JsonResponse(json.loads(result))
     else:
-        result = "action buruu"
-
-    return HttpResponse(result)
+        result = sendResponse(request, 3002, [], "no action")
+        return JsonResponse(json.loads(result))
 #checkService
-    
- 
-    
 
-#gettime
+
