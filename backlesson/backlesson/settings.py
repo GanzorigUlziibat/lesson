@@ -14,6 +14,8 @@ from pathlib import Path
 import psycopg2
 from datetime import datetime
 import json, string, random
+import smtplib
+from email.mime.text import MIMEText
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -144,10 +146,13 @@ resultMessages = {
     404:"Not found",
     1000 : "Burtgeh bolomjgui. Mail hayag umnu burtgeltei baina",
     1001 : "Hereglegch Amjilttai burtgegdlee. Batalgaajuulah mail ilgeegdlee. 24 tsagiin dotor batalgaajuulna.",
-    1002 : "Batalgaajuulah mail ilgeelee",
+    1002 : "Login Successful",
+    1003 : "Amjilttai batalgaajlaa",
+    1004 : "Hereglegchiin ner, nuuts ug buruu baina.",
     3001 : "ACTION BURUU",
     3002 : "METHOD BURUU",
     3003 : "JSON BURUU",
+    3004 : "Token-ii hugatsaa duussan. Idevhgui token baina.",
 }
 
 # db connection
@@ -174,3 +179,40 @@ def generateStr(length):
     password = ''.join(random.choice(characters) for i in range(length))
     return password
 # generateStr
+
+def sendMail(recipient, subj, bodyHtml):
+    sender_email = "is21d005@mandakh.edu.mn"
+    sender_password = "05060109"
+    recipient_email = recipient
+    subject = subj
+    body = bodyHtml
+    html_message = MIMEText(body, 'html')
+    html_message['Subject'] = subject
+    html_message['From'] = sender_email
+    html_message['To'] = recipient_email
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, html_message.as_string())
+#sendMail
+
+# def sendMail(recipientMail, subj, bodyMessage):
+#     sender_email = "sw21d025@mandakh.edu.mn"
+#     sender_password = "03212456"
+#     recipient_email = recipientMail
+#     subject = subj
+#     body = bodyMessage
+#     # body = """
+#     # <html>
+#     # <body>
+#     #     <p>This is an <b>HTML</b> email sent from Python using the Gmail SMTP server.</p>
+#     # </body>
+#     # </html>
+#     # """
+#     html_message = MIMEText(body, 'html')
+#     html_message['Subject'] = subject
+#     html_message['From'] = sender_email
+#     html_message['To'] = recipient_email
+#     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+#         server.login(sender_email, sender_password)
+#         server.sendmail(sender_email, recipient_email, html_message.as_string())
+# #sendMail
