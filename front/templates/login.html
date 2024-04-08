@@ -1,0 +1,25 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <center>
+        login page
+        <p>Oyutnuudad oilgomjtoi baih uudnees nevtreh ner, nuuts ugiig bichij ugluu. </p>
+        <p>is21d005@mandakh.edu.mn , 12345</p>
+   
+        <form method="post">
+            {%csrf_token%}
+            <p>
+            <label>Username: </label>
+            <input type="text" name="username" value="is21d005@mandakh.edu.mn"/></p>
+            <p><label>Password: </label>
+            <input type="password" name="passw" value="12345"/></p>
+            <p><input type="submit" value="LOGIN"/></p>
+            <p>
+                <label>{{resultCode}} {{resultMessage}}</label>
+            </p>
+        </form>
+    </center>
+    </body>
+</html>
