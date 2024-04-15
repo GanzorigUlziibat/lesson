@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 import requests, json
+import hashlib 
 # Create your views here.
 def dt_login(request):
     requestJSON = {}
@@ -10,7 +11,8 @@ def dt_login(request):
         # print(username,passw)
         requestJSON["action"] = "login"
         requestJSON["email"] = username
-        requestJSON["passw"] = passw
+        requestJSON["passw"] = hashlib.md5(hashlib.md5(passw.encode('utf-8')).hexdigest().encode('utf-8')).hexdigest()
+        
 
         r = requests.post('http://localhost:8001/users/',
                             data=json.dumps(requestJSON),
@@ -38,3 +40,52 @@ def dt_login(request):
 
 def dt_dashboard(request):
     return render (request, "dashboard.html")
+
+def dt_register(request):
+    requestJSON = {}
+    ctx = {}
+    if request.method == 'POST':
+        username = request.POST['username']
+        passw = request.POST['passw']
+        lastname = request.POST['lastname']
+        firstname = request.POST['firstname']
+
+        requestJSON["action"] = "register"
+        requestJSON["email"] = username
+        # passw = passw.encode('utf-8')
+        requestJSON["passw"] = hashlib.md5(hashlib.md5(passw.encode('utf-8')).hexdigest().encode('utf-8')).hexdigest()
+        requestJSON["firstname"] = firstname
+        requestJSON["lastname"] = lastname
+
+        r = requests.post('http://localhost:8001/users/',
+                            data=json.dumps(requestJSON),
+                            headers={'Content-Type': 'application/json'},
+                            )
+
+        resultCode = r.json()['resultCode']
+        resultMessage = r.json()['resultMessage']
+
+        ctx['resultCode'] = resultCode
+        ctx['resultMessage'] = resultMessage
+
+        ctx['inputemail'] = username
+        ctx['inputfirstname'] = firstname
+        ctx['inputlastname'] = lastname
+
+
+        if resultCode == 1001:
+            email = r.json()['data'][0]['email']
+            firstname = r.json()['data'][0]['firstname']
+            lastname = r.json()['data'][0]['lastname']
+            ctx['email'] = email
+            ctx['firstname'] = firstname
+            ctx['lastname'] = lastname
+            return render(request, "login.html", ctx)
+        else:
+            email = r.json()['data'][0]['email']
+            ctx['email'] = email
+    
+    return render (request, "register.html", ctx)
+    
+    #print(username, passw, firstname, lastname)
+    
