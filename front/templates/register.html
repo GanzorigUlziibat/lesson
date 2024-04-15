@@ -7,22 +7,27 @@
     <title>Document</title>
 </head>
 <body>
-    register
-    <form method="post">
-        {%csrf_token%}
-        <p>
-        <label>Username: </label>
-        <input type="email" name="username" value="{{inputemail}}" required/></p>
-        <p><label>Password: </label>
-        <input type="password" name="passw" value="" required minlength="5"/></p>
-        <p><label>Lastname: </label>
-        <input type="text" name="lastname" value="{{inputlastname}}" required minlength="1"/></p>
-        <p><label>Firstname: </label>
-        <input type="text" name="firstname" value="{{inputfirstname}}" required minlength="2"/></p>
-        <p><input type="submit" value="REGISTER"/></p>
-        <p>
-            <label>{{resultCode}} {{email}} {{resultMessage}}</label>
-        </p>
-    </form>
+
+    <center>
+        register page
+      
+   
+        <form method="post">
+            {%csrf_token%}
+            <p>
+            <label>Username: </label>
+            <input type="email" name="username" value="{{request.POST.username}}" required/></p>
+            <p><label>Password: </label>
+            <input type="password" name="passw" value="" required minlength="5"/></p>
+            <p><label>Firstname: </label>
+            <input type="text" name="firstname" value="{{inputFirstname}}" required minlength="2"/></p>
+            <p><label>Lastname: </label>
+            <input type="text" name="lastname" value="{{request.POST.lastname}}" required minlength="1"/></p>
+            <p><input type="submit" value="REGISTER"/></p>
+            <p>
+                <label>{{resultCode}} {{resultMessage}}</label>
+            </p>
+        </form>
+    </center>
 </body>
 </html>
