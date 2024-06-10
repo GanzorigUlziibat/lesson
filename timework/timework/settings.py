@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import psycopg2
 from datetime import datetime
@@ -11,10 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^w9@%n$paih!=69#ndjqq^^_&k11j^-z$yc6c#mir*450vrk2e'
+SECRET_KEY = 'django-insecure-!wm1y87qj+hwl@i^ow!l#5^aow51^d6wvwstc5-o*f^3vch!__'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'timeapp',
 ]
 
 MIDDLEWARE = [
@@ -43,12 +43,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'backlesson.urls'
+ROOT_URLCONF = 'timework.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR /'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -61,11 +61,11 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backlesson.wsgi.application'
+WSGI_APPLICATION = 'timework.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -76,7 +76,7 @@ DATABASES = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -95,7 +95,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
+# https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -107,16 +107,19 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-def sendResponse(request, resultCode, data, action="no action"):
+
+#### user defined
+
+def sendResponse(resultCode, data, action="no action"):
     response = {}
     response["resultCode"] = resultCode
     response["resultMessage"] = resultMessages[resultCode]
@@ -125,30 +128,21 @@ def sendResponse(request, resultCode, data, action="no action"):
     response["action"] = action
     response["curdate"] = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
 
-
     return json.dumps(response, indent=4, sort_keys=True, default=str)
 #   sendResponse
 
-#Messages
 resultMessages = {
     200:"Success",
     404:"Not found",
-    1000 : "Burtgeh bolomjgui. Mail hayag umnu burtgeltei baina",
-    1001 : "Hereglegch Amjilttai burtgegdlee. Batalgaajuulah mail ilgeegdlee. 24 tsagiin dotor batalgaajuulna.",
-    1002 : "Login Successful",
-    1003 : "Amjilttai batalgaajlaa",
-    1004 : "Hereglegchiin ner, nuuts ug buruu baina.",
-    3001 : "ACTION BURUU",
-    3002 : "METHOD BURUU",
-    3003 : "JSON BURUU",
-    3004 : "Token-ii hugatsaa duussan. Idevhgui token baina.",
+    405:"Method buruu"
 }
+#### resultMessages
 
 # db connection
 def connectDB():
     con = psycopg2.connect (
         host = '192.168.0.15',
-        # host = '59.153.86.251',
+        # host = '59.153.86.254',
         dbname = 'qrlesson',
         user = 'userlesson',
         password = '123',
@@ -161,47 +155,3 @@ def connectDB():
 def disconnectDB(con):
     con.close()
 # disconnectDB
-
-#random string generating
-def generateStr(length):
-    characters = string.ascii_lowercase + string.digits
-    password = ''.join(random.choice(characters) for i in range(length))
-    return password
-# generateStr
-
-def sendMail(recipient, subj, bodyHtml):
-    sender_email = "is21d005@mandakh.edu.mn"
-    sender_password = "05060109"
-    recipient_email = recipient
-    subject = subj
-    body = bodyHtml
-    html_message = MIMEText(body, 'html')
-    html_message['Subject'] = subject
-    html_message['From'] = sender_email
-    html_message['To'] = recipient_email
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, recipient_email, html_message.as_string())
-#sendMail
-
-# def sendMail(recipientMail, subj, bodyMessage):
-#     sender_email = "sw21d025@mandakh.edu.mn"
-#     sender_password = "03212456"
-#     recipient_email = recipientMail
-#     subject = subj
-#     body = bodyMessage
-#     # body = """
-#     # <html>
-#     # <body>
-#     #     <p>This is an <b>HTML</b> email sent from Python using the Gmail SMTP server.</p>
-#     # </body>
-#     # </html>
-#     # """
-#     html_message = MIMEText(body, 'html')
-#     html_message['Subject'] = subject
-#     html_message['From'] = sender_email
-#     html_message['To'] = recipient_email
-#     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-#         server.login(sender_email, sender_password)
-#         server.sendmail(sender_email, recipient_email, html_message.as_string())
-# #sendMail
